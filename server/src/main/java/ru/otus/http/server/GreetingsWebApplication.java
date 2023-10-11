@@ -1,4 +1,4 @@
-package ru.fisunov.http.server;
+package ru.otus.http.server;
 
 import java.io.IOException;
 import java.io.OutputStream;
