@@ -28,7 +28,7 @@ public class ItemsWebApplication implements MyWebApplication {
         this.name = "Items Web Application";
         items = new ArrayList<>();
 
-        connection = DriverManager.getConnection("jdbc:sqlite:server\\items.db");
+        connection = DriverManager.getConnection("jdbc:sqlite:server\\items2.db");
     }
 
     private void getItemsFromDB(List<Item> items, Connection con) {
@@ -43,13 +43,27 @@ public class ItemsWebApplication implements MyWebApplication {
                 items.add(item);
             }
         } catch (SQLException ex) {
-            throw new RuntimeException(ex.getMessage());
+            if (ex.getMessage().contains("no such table: ITEMS")) {
+                logger.debug("no such table: ITEMS");
+                String sqlCreate = "CREATE TABLE ITEMS ( ID INTEGER, TITLE TEXT(100) );";
+                try (Statement statement = con.createStatement() ) {
+                    statement.execute("CREATE TABLE ITEMS ( ID INTEGER, TITLE TEXT(100) );");
+                    logger.info("ITEMS create");
+                } catch (SQLException ex2) {
+                    logger.error(ex2.getMessage());
+                    throw new RuntimeException(ex2.getMessage());
+                }
+            }
+            else {
+                logger.error(ex.getMessage());
+                throw new RuntimeException(ex.getMessage());
+            }
         }
     }
 
     private void saveItemToDB(Item item, Connection con) {
         String sqlInsert = "INSERT INTO ITEMS( ID, TITLE ) VALUES ( ?, ? ) ";
-        try (PreparedStatement ps = connection.prepareStatement(sqlInsert)) {
+        try (PreparedStatement ps = con.prepareStatement(sqlInsert)) {
             ps.setLong(1, item.getId());
             ps.setString(2, item.getTitle());
             ps.executeUpdate();
