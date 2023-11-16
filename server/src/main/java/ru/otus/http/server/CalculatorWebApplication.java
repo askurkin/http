@@ -1,4 +1,7 @@
-package ru.fisunov.http.server;
+package ru.otus.http.server;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -6,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 
 public class CalculatorWebApplication implements MyWebApplication {
     private String name;
+    private static final Logger logger = LogManager.getLogger(CalculatorWebApplication.class);
 
     public CalculatorWebApplication() {
         this.name = "Web Calculator";
@@ -16,6 +20,7 @@ public class CalculatorWebApplication implements MyWebApplication {
         String result = "";
         int a = Integer.parseInt(request.getParam("a"));
         int b = Integer.parseInt(request.getParam("b"));
+        logger.info("a=" + request.getParam("a") + "; b=" + request.getParam("b") + "; uri=" + request.getUri());
         if (request.getUri().contains("/add")) {
             result = String.format("%d + %d = %d", a, b, a + b);
         } else if (request.getUri().contains("/subtract")) {

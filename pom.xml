@@ -5,13 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ru.fisunov.http</groupId>
-    <artifactId>java-basic-http</artifactId>
+    <artifactId>http</artifactId>
     <packaging>pom</packaging>
     <version>1.0</version>
 
     <modules>
         <module>server</module>
-        <module>client</module>
     </modules>
 
     <properties>

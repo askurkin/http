@@ -1,5 +1,11 @@
-package ru.fisunov.http.server;
+package ru.otus.http.server;
 
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -7,16 +13,42 @@ import java.util.Map;
 public class Request {
     private String uri;
     private String raw;
+    private String body;
+    private HttpMethod method;
     private Map<String, String> params;
+    private static final Logger logger = LogManager.getLogger(Request.class);
 
     public String getUri() {
         return uri;
     }
 
-    public Request(String rawRequest) {
-        this.raw = rawRequest;
+    public HttpMethod getMethod() {
+        return method;
+    }
+
+    public String getBody() {
+        return body;
+    }
+
+    public Request(InputStream inputStream) throws IOException {
+        byte[] buffer = new byte[2048];
+        int n = inputStream.read(buffer);
+        this.raw = new String(buffer, 0, n);
+        this.method = parseMethod(raw);
         this.uri = parseUri(raw);
         this.params = parseGetRequestParams(raw);
+        this.body = parseBody(raw);
+    }
+
+    private HttpMethod parseMethod(String request) {
+        int endIndex = request.indexOf(' ');
+        String method = request.substring(0, endIndex);
+        return HttpMethod.valueOf(method);
+    }
+
+    private String parseBody(String request) {
+        int startIndex = request.indexOf("\r\n\r\n");
+        return request.substring(startIndex + 4, request.length());
     }
 
     private String parseUri(String request) {
@@ -47,9 +79,13 @@ public class Request {
     }
 
     public void show() {
-        System.out.println("Запрос:");
-        System.out.println("uri: " + uri);
-        System.out.println("params: " + params);
+        logger.info("Получен запрос:");
+        logger.info("Запрос: " + method);
+        logger.info("uri: " + uri);
+        logger.info("params: " + params);
+        if (method == HttpMethod.POST) {
+            logger.info("body: " + body);
+        }
     }
 
     public String getParam(String key) {
